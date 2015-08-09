@@ -17,17 +17,17 @@ import javax.swing.JPanel;
 public class Zelle extends JPanel {
 	
 	private int anznachbaren;
-	private int aktiviert; //2=Spielstart;1=Anklickbar;0=Benutzt
-	private int x,y;
+	/**2=Spielstart;1=Anklickbar;0=Benutzt*/
+	private int aktiviert = 2;
+	private int posx,posy;
 	private boolean bombe = false;
 	private boolean geklickt = false;
 	private boolean rechtsgeklickt = false;
 	private boolean stop = false;
-	private boolean markiert = false;
 
 	public Zelle(int x, int y) {
-		this.x = x;
-		this.y = y;
+		this.posx = x;
+		this.posy = y;
 		this.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent evt) {
 				if(evt.getButton() == MouseEvent.BUTTON1) {
@@ -54,6 +54,7 @@ public class Zelle extends JPanel {
 		stift.setFont(font);
 		if(aktiviert == 2) {
 			aktiviert = 1;
+			stift.drawString("",fm.stringWidth("")/2,fm.getHeight()-4);
 		}
 		if(geklickt == true && (aktiviert == 1 || aktiviert == 0)) {
 			aktiviert = 0;
@@ -73,7 +74,6 @@ public class Zelle extends JPanel {
 			if(this.getAnznachbaren() > 0 && !this.isBombe()) {
 				String num = Integer.toString(this.getAnznachbaren());
 				stift.drawString(num,fm.stringWidth(num)/2+2,fm.getHeight()-4);
-				Minesweeper.spielzug(this);
 			} else if(this.isBombe()) {
 				this.setBackground(new Color(0xB20000));
 				stift.setColor(Color.black);
@@ -88,15 +88,11 @@ public class Zelle extends JPanel {
 					this.stop = true;
 				}
 			}
-		} else if(rechtsgeklickt == true) {
-			rechtsgeklickt = false;
-			if(markiert) {
-				stift.setColor(Color.red);
-				stift.drawString("T",fm.stringWidth("T")/2,fm.getHeight()-4);
-			} else {
-				stift.drawString("",fm.stringWidth("")/2,fm.getHeight()-4);
-			}
-			markiert = !markiert;
+		} else if(rechtsgeklickt) {
+			stift.setColor(Color.red);
+			stift.drawString("T",fm.stringWidth("T")/2,fm.getHeight()-4);
+		} else {
+			stift.drawString("",fm.stringWidth("")/2,fm.getHeight()-4);
 		}
 	}
 	
@@ -125,26 +121,38 @@ public class Zelle extends JPanel {
 	}
 
 	/**
-	 * Diese Methode wird aufgerufen, wenn ein Linksklick stattfindet. Sie setzt den Linksklick-Boolean auf true und laedt die Zelle neu.
+	 * Diese Methode wird aufgerufen, wenn ein Linksklick stattfindet. Sie startet den Algorithmus zum Aufdecken der Zellen.
 	 */
-	public void klick() {
-		geklickt = true;
-		this.repaint();
+	private void klick() {
+		MinesweeperMain.mw.spielzug(this);
 	}
 	
 	/**
 	 * Diese Methode wird aufgerufen, wenn ein Rechtsklick stattfindet. Sie setzt den Rechtsklick-Boolean auf true und laedt die Zelle neu.
 	 */
 	public void markieren() {
-		rechtsgeklickt = true;
+		rechtsgeklickt = !rechtsgeklickt;
+		if(rechtsgeklickt && bombe) {
+			MinesweeperMain.mw.gefundeneBomben++;
+		} else if(!rechtsgeklickt && !bombe) {
+			MinesweeperMain.mw.gefundeneBomben--;
+		}
 		this.repaint();
 	}
 
-	/*public int getX() {
-		return x;
+	public int getPosx() {
+		return posx;
 	}
 
-	public int getY() {
-		return y;
-	}*/
+	public int getPosy() {
+		return posy;
+	}
+
+	public void setGeklickt(boolean geklickt) {
+		this.geklickt = geklickt;
+	}
+
+	public boolean isRechtsgeklickt() {
+		return rechtsgeklickt;
+	}
 }
