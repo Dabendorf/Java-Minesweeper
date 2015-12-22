@@ -151,6 +151,8 @@ public class Minesweeper {
                 }
         	}
         }
+        frame1.revalidate();
+		frame1.repaint();
     }
 	
 	/**
